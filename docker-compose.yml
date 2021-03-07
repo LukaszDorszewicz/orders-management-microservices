@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+
+  eureka-server:
+    image: eureka-server
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8761:8761"
