@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: api-gateway
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+tokens:
+  access-token:
+    expiration-time-ms: 300000
+  refresh-token:
+    expiration-time-ms: 30000000
+    property: access-token-expiration-time-ms
+  prefix: Bearer
+

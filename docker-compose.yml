@@ -2,6 +2,15 @@ version: "3.8"
 
 services:
 
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - network
+
   eureka-server:
     image: eureka-server
     build:
@@ -10,3 +19,37 @@ services:
     restart: always
     ports:
       - "8761:8761"
+    networks:
+    - network
+
+  api-gateway:
+    image: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - eureka-server
+    ports:
+      - "8080:8080"
+    networks:
+    - network
+
+  users-service:
+    image: users-service
+    build:
+      context: ./users-service
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - mongodb
+    ports:
+      - "8090:8090"
+    networks:
+      - network
+
+networks:
+  network:
+
+volumes:
+  mongo_data:
