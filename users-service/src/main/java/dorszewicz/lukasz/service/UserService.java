@@ -1,7 +1,9 @@
 package dorszewicz.lukasz.service;
 
+import dorszewicz.lukasz.exception.AppNotFoundException;
 import dorszewicz.lukasz.exception.AppSecurityException;
 import dorszewicz.lukasz.repository.UserRepository;
+import dorszewicz.lukasz.user.User;
 import dorszewicz.lukasz.user.dto.CreateUserDto;
 import dorszewicz.lukasz.user.dto.GetUserDto;
 import dorszewicz.lukasz.validation.CreateUserDtoValidator;
@@ -10,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ValidationException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,14 +24,21 @@ public class UserService {
 
     public GetUserDto findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppSecurityException("User with username: " + username + " not found"))
+                .orElseThrow(() -> new AppNotFoundException("User with username: " + username + " not found"))
                 .toGetUserDto();
     }
 
     public GetUserDto findById(String id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new AppSecurityException("User with id: " + id + " not found"))
+                .orElseThrow(() -> new AppNotFoundException("User with id: " + id + " not found"))
                 .toGetUserDto();
+    }
+
+    public List<GetUserDto> findAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(User::toGetUserDto)
+                .collect(Collectors.toList());
     }
 
     public String registerUser(CreateUserDto createUserDto) {

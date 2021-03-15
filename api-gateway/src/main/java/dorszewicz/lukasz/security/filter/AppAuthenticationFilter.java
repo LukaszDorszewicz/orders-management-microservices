@@ -19,8 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 
-// rozszerzenie o ta klase powoduje ze ten filter bedzie wykonywal sie
-// automatycznie na metode POST /login
 public class AppAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
@@ -30,12 +28,9 @@ public class AppAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.authenticationManager = authenticationManager;
         this.appTokensService = appTokensService;
 
-        // jezeli chcesz zeby za logowanie odpowiadal inny request to mozesz to zmienic
-        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/app-login", "POST"));
+        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/login", "POST"));
     }
 
-    // ta metoda podejmuje probe logowania czyli jezeli uda sie zalogowac to automatycznie przekieruje Cie do
-    // ponizszej metody successfulAuthentication i tam beda wygenerowane tokeny a jak nie uda sie to wyjatek
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
@@ -50,8 +45,6 @@ public class AppAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
-    // jezeli powyzsze logowanie sie powiedzie to zwroc uwage ze jako 4 argument masz Authentication
-    // ktory reprezentuje zalogowanego usera
     @Override
     protected void successfulAuthentication(
             HttpServletRequest request,

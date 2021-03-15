@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 @FeignClient(name = "users-service")
 public interface UserServiceProxy {
 
@@ -19,4 +21,7 @@ public interface UserServiceProxy {
 
     @PostMapping("/user/register")
     String registerNewUser(@RequestBody CreateUserDto createUserDto);
+
+    @GetMapping("/user/findAll")
+    List<GetUserDto> findAll();
 }

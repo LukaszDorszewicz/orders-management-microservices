@@ -6,6 +6,8 @@ import dorszewicz.lukasz.user.dto.GetUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -25,5 +27,10 @@ public class UserController {
     @PostMapping("/user/register")
     public String registerNewUser(@RequestBody CreateUserDto createUserDto) {
         return userService.registerUser(createUserDto);
+    }
+
+    @GetMapping("/user/findAll")
+    public List<GetUserDto> findAll() {
+        return userService.findAll();
     }
 }

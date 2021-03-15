@@ -1,6 +1,7 @@
 package dorszewicz.lukasz.security.tokens;
 
 import dorszewicz.lukasz.proxy.UserServiceProxy;
+import dorszewicz.lukasz.security.dto.RefreshTokenDto;
 import dorszewicz.lukasz.security.dto.TokensDto;
 import dorszewicz.lukasz.security.exception.AppSecurityException;
 import io.jsonwebtoken.Claims;
@@ -35,9 +36,6 @@ public class AppTokensService {
     private final SecretKey secretKey;
     private final UserServiceProxy userServiceProxy;
 
-    // --------------------------------------------------------------------------------------------------------
-    // GENEROWANIE TOKENA
-    // --------------------------------------------------------------------------------------------------------
     public TokensDto generateTokens(Authentication authentication) {
         if (authentication == null) {
             throw new AppSecurityException("authentication object is null");
@@ -77,9 +75,49 @@ public class AppTokensService {
                 .build();
     }
 
-    // --------------------------------------------------------------------------------------------------------
-    // PARSOWANIE TOKENA
-    // --------------------------------------------------------------------------------------------------------
+    public TokensDto generateTokensFromRefreshToken(RefreshTokenDto refreshTokenDto) {
+        if (refreshTokenDto == null) {
+            throw new AppSecurityException("refresh token does not exist");
+        }
+
+        var accessTokenExpirationDateMsFromRt = Long.valueOf(claims(refreshTokenDto.getToken()).get(refreshTokenProperty).toString());
+        if (accessTokenExpirationDateMsFromRt < System.currentTimeMillis()) {
+            throw new AppSecurityException("cannot refresh tokens");
+        }
+
+        var id = id(refreshTokenDto.getToken());
+
+        var user = userServiceProxy
+                .findById(id);
+        //orElseThrow(() -> new AppSecurityException("user with id " + user.getId() + " not found")
+        var userId = user.getId();
+
+        var currentDate = new Date();
+
+        var accessTokenExpirationDateMs = System.currentTimeMillis() + accessTokenExpirationTimeMs;
+        var accessTokenExpirationDate = new Date(accessTokenExpirationDateMs);
+
+        var accessToken = Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .setIssuedAt(currentDate)
+                .setExpiration(accessTokenExpirationDate)
+                .signWith(secretKey)
+                .compact();
+
+        var refreshToken = Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .setIssuedAt(currentDate)
+                .setExpiration(expirationDate(refreshTokenDto.getToken()))
+                .claim(refreshTokenProperty, accessTokenExpirationDateMs)
+                .signWith(secretKey)
+                .compact();
+
+        return TokensDto
+                .builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 
     public Authentication parseAccessToken(String header) {
         if (header == null) {
@@ -93,7 +131,7 @@ public class AppTokensService {
         var accessToken = header.replace(tokensPrefix, "");
 
         if (!isTokenValid(accessToken)) {
-            throw new AppSecurityException("tokena has been expired");
+            throw new AppSecurityException("token has been expired");
         }
 
         var userId = id(accessToken);
@@ -128,9 +166,5 @@ public class AppTokensService {
 
     private boolean isTokenValid(String token) {
         return expirationDate(token).after(new Date());
-    }
-
-    private boolean isRefreshIsPermitted(String token) {
-        return Long.parseLong(claims(token).get(refreshTokenProperty).toString()) > System.currentTimeMillis();
     }
 }

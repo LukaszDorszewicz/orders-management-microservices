@@ -21,7 +21,6 @@ public class AppAuthorizationFilter extends BasicAuthenticationFilter {
         this.appTokensService = appTokensService;
     }
 
-    // ponizsza metode wyluska z requesta header i przekaze go do parsowania
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -34,8 +33,6 @@ public class AppAuthorizationFilter extends BasicAuthenticationFilter {
             SecurityContextHolder.getContext().setAuthentication(authorizedUser);
         }
 
-        // to wywolaie mowi ze filter ma przekierowac obiekty request oraz response
-        // do kolejnego filtra w lancuchu wywolan filtra
         chain.doFilter(request, response);
     }
 }
